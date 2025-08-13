@@ -7,7 +7,7 @@ st.set_page_config(page_title="Camera Checklist", page_icon="✅", layout="cente
 st.title("🎬 Camera Checklist")
 
 # 👉 CHANGE THIS to match where your file sits in the repo:
-RELATIVE_CHECKLIST_PATH = "main/SonyFS6.py"  # e.g. "checklist/Sony FS6.py" if it's in a folder
+RELATIVE_CHECKLIST_PATH = "main/SonyFS6.py"  # e.g. "checklist/SonyFS6.py" if it's in a folder
 
 checklist_path = Path(__file__).parent / RELATIVE_CHECKLIST_PATH
 if not checklist_path.exists():
