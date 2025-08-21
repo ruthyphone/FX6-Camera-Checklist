@@ -3,6 +3,18 @@ import streamlit as st
 import runpy
 from pathlib import Path
 
+import uuid
+
+# Always have a list to work with
+if "items" not in st.session_state:
+    st.session_state["items"] = []   # each item: {"text": "...", "done": False, "category": "..."}
+
+# Ensure each item has a permanent unique id (uid)
+for it in st.session_state["items"]:
+    if isinstance(it, dict) and "uid" not in it:
+        it["uid"] = uuid.uuid4().hex
+
+
 if "items" not in st.session_state:
     st.session_state["items"] = []  # list of dicts like {"text": "...", "category": "..."}
 
@@ -92,12 +104,41 @@ if cats:
 else:
     view = items
 
+items = st.session_state["items"]
+index_by_uid = {it["uid"]: idx for idx, it in enumerate(items) if isinstance(it, dict) and "uid" in it}
+
 # Render steps (works if each item is {"text": "...", ...}; falls back to str(item))
-for idx, step in enumerate(view, start=1):
-    if isinstance(step, dict):
-        st.write(f"{idx}. {step.get('text', str(step))}")
-    else:
-        st.write(f"{idx}. {str(step)}")
+# Assume you already computed `view` (the list you want to display), e.g. filtered by category.
+# Each element of `view` is one of the dicts from st.session_state["items"].
+
+for view_pos, item in enumerate(view):
+    if not isinstance(item, dict):
+        st.write(f"{view_pos+1}. {str(item)}")
+        continue
+
+    uid = item.get("uid")
+    if not uid:
+        # Safety: create if missing, then update the index map
+        uid = uuid.uuid4().hex
+        item["uid"] = uid
+        index_by_uid[uid] = len(st.session_state["items"]) - 1  # best-effort; adjust if you ever append here
+
+    # Use uid-based keys so they are truly unique across the app
+    col1, col2 = st.columns([0.15, 0.85])
+    with col1:
+        checked = st.checkbox(
+            label="", 
+            value=bool(item.get("done", False)), 
+            key=f"done_{uid}"
+        )
+    with col2:
+        text_val = item.get("text", "")
+        st.write(text_val if text_val else "(no text)")
+
+    # Write the checkbox state back to the master list using uid→index mapping
+    master_idx = index_by_uid[uid]
+    st.session_state["items"][master_idx]["done"] = checked
+
 # end fix
 
 for i, item in enumerate(view):
