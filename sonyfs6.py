@@ -196,3 +196,5 @@ if __name__ == "__main__":
             cats = None
         out = to_markdown(cats) if args.format == "md" else (to_json(cats) if args.format == "json" else to_markdown(cats))
         print(out)
+# backward compatability
+CATEGORY_MAP = RAW_CATEGORY_MAP
